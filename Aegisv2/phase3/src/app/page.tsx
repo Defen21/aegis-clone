@@ -1,9 +1,29 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Shield, Crosshair, Eye, ArrowRight, Zap, Bug, FileText, ShieldCheck } from "lucide-react";
+import { supabaseClient } from "@/lib/supabaseClient";
 
 export default function RootPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
+      (event) => {
+        if (event === "SIGNED_IN") {
+          router.push("/dashboard");
+        }
+      }
+    );
+    // Also check if already signed in
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      if (session) router.push("/dashboard");
+    });
+    return () => subscription.unsubscribe();
+  }, [router]);
+
   return (
     <div className="space-y-8">
       {/* Hero */}
